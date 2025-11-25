@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import {
   ClerkProvider,
   SignInButton,
@@ -41,8 +42,26 @@ export default function RootLayout({
               </main>
             </SignedOut>
             <SignedIn>
-              <header className="flex justify-end items-center p-4 gap-4 h-16">
-                <UserButton />
+              <header className="sticky top-0 z-50 bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-8">
+                  <div className="flex justify-between items-center h-16">
+                    <nav className="flex items-center gap-8">
+                      <Link 
+                        href="/dashboard/agencies" 
+                        className="text-gray-700 hover:text-gray-900 font-bold transition"
+                      >
+                        Agencies
+                      </Link>
+                      <Link 
+                        href="/dashboard/contacts" 
+                        className="text-gray-700 hover:text-gray-900 font-bold transition"
+                      >
+                        Contacts
+                      </Link>
+                    </nav>
+                    <UserButton />
+                  </div>
+                </div>
               </header>
               <main>
                 {children}
@@ -51,5 +70,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }
