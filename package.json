@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "seed": "ts-node scripts/seedDatabase.ts",
+    "seed:dev": "ts-node --project tsconfig.json scripts/seedDatabase.ts",
     "lint": "eslint"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.35.5",
+    "better-sqlite3": "^12.4.6",
+    "csv-parse": "^6.1.0",
     "next": "16.0.4",
     "react": "19.2.0",
     "react-dom": "19.2.0"
