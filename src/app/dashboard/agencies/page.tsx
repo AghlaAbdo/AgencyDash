@@ -286,26 +286,26 @@ export default function AgenciesPage() {
                       key={agency.id}
                       className="hover:bg-gray-50 transition"
                     >
-                      <td className="w-[18%] px-4 py-4 font-medium text-gray-900 break-words">
+                      <td className="w-[18%] px-4 py-4 font-medium text-gray-900 wrap-break-word">
                         {agency.name}
                       </td>
-                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 wrap-break-word">
                         {agency.state} ({agency.state_code})
                       </td>
-                      <td className="w-[10%] px-4 py-4 break-words">
+                      <td className="w-[10%] px-4 py-4 wrap-break-word">
                         <span className="inline-block px-2 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded">
                           {agency.type}
                         </span>
                       </td>
-                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 wrap-break-word">
                         {agency.county || '-'}
                       </td>
-                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 wrap-break-word">
                         {agency.population
                           ? agency.population.toLocaleString()
                           : '-'}
                       </td>
-                      <td className="w-[14%] px-4 py-4 break-words">
+                      <td className="w-[14%] px-4 py-4 wrap-break-word">
                         {agency.website ? (
                           <a
                             href={agency.website}
@@ -319,10 +319,10 @@ export default function AgenciesPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="w-[11%] px-4 py-4 text-gray-600 break-words">
+                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
                         {formatDate(agency.created_at)}
                       </td>
-                      <td className="w-[11%] px-4 py-4 text-gray-600 break-words">
+                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
                         {formatDate(agency.updated_at)}
                       </td>
                     </tr>

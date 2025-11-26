@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse/sync';
-// @ts-ignore
+// @ts-expect-error
 import Database from 'better-sqlite3';
 
 interface AgencyRow {
@@ -58,7 +58,7 @@ async function seedDatabase() {
 
   const agenciesPath = path.join(process.cwd(), 'data', 'agencies_agency_rows.csv');
   const contactsPath = path.join(process.cwd(), 'data', 'contacts_contact_rows.csv');
-  const dbPath = path.join(process.cwd(), 'database', 'data.db');
+  const dbPath = path.join(process.cwd(), 'data', 'data.db');
 
   const agencies = readCsvRows<AgencyRow>(agenciesPath);
   const contacts = readCsvRows<ContactRow>(contactsPath);
@@ -165,6 +165,36 @@ async function seedDatabase() {
       return inserted;
     });
 
+    const insertedAgencies = insertAgenciesTxn(agencies);
+    console.log(`Agencies seeded (${insertedAgencies} rows)`);
+
+    // Build a map of agency IDs to agency names and a set of valid IDs
+    const agencyMap = new Map<string, string>();
+    const validAgencyIds = new Set<string>();
+
+    for (const a of agencies) {
+      const id = nullOrValue(a.id) as string | null;
+      const name = nullOrValue(a.name) as string | null;
+      if (id && name) {
+        agencyMap.set(id, name);
+        validAgencyIds.add(id);
+      }
+    }
+
+    // Prepare contacts with validated agency references
+    const preparedContacts = contacts.map((c) => {
+      const aId = nullOrValue(c.agency_id) as string | null;
+      // Only set agency_id if it exists in our valid set
+      const validAgencyId = aId && validAgencyIds.has(aId) ? aId : null;
+      const agencyName = validAgencyId && agencyMap.has(validAgencyId) ? agencyMap.get(validAgencyId) : null;
+
+      return {
+        ...c,
+        agency_id: validAgencyId,
+        agency_name: agencyName,
+      };
+    });
+
     const insertContactsTxn = db.transaction((rows: ContactRow[]) => {
       let inserted = 0;
       let skipped = 0;
@@ -194,30 +224,6 @@ async function seedDatabase() {
         inserted++;
       }
       return { inserted, skipped };
-    });
-
-    const insertedAgencies = insertAgenciesTxn(agencies);
-    console.log(`Agencies seeded (${insertedAgencies} rows)`);
-
-    // Build a map of agency IDs to agency names
-    const agencyMap = new Map<string, string>();
-    for (const a of agencies) {
-      const id = nullOrValue(a.id) as string | null;
-      const name = nullOrValue(a.name) as string | null;
-      if (id && name) {
-        agencyMap.set(id, name);
-      }
-    }
-
-    // Prepare contacts with agency names
-    const preparedContacts = contacts.map((c) => {
-      const aId = nullOrValue(c.agency_id) as string | null;
-      const agencyName = aId && agencyMap.has(aId) ? agencyMap.get(aId) : null;
-      return {
-        ...c,
-        agency_id: aId,
-        agency_name: agencyName,
-      };
     });
 
     const contactResult = insertContactsTxn(preparedContacts);
