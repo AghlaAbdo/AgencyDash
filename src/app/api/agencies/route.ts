@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
 
-    // Query parameters
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const state = searchParams.get("state");
@@ -14,7 +13,6 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "name";
     const sortOrder = (searchParams.get("sortOrder") || "asc").toLowerCase();
 
-    // Validate pagination
     const skip = (page - 1) * limit;
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
@@ -25,7 +23,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate sortBy
     const validSortFields = [
       "name",
       "state",
@@ -34,55 +31,48 @@ export async function GET(request: NextRequest) {
       "type",
     ];
     const finalSortBy = validSortFields.includes(sortBy) ? sortBy : "name";
-    const finalSortOrder = sortOrder === "desc" ? "DESC" : "ASC";
+    const finalSortOrder = sortOrder === "desc" ? -1 : 1;
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
-    // Build WHERE clause
-    let whereClause = "1=1";
-    const params: any[] = [];
+    // Build filter
+    const filter: any = {};
 
     if (state) {
-      whereClause += " AND state_code = ?";
-      params.push(state.toUpperCase());
+      filter.state_code = state.toUpperCase();
     }
 
     if (type) {
-      whereClause += " AND LOWER(type) = LOWER(?)";
-      params.push(type);
+      filter.type = { $regex: type, $options: "i" };
     }
 
     if (search) {
-      whereClause += " AND (LOWER(name) LIKE LOWER(?) OR LOWER(county) LIKE LOWER(?))";
-      const searchTerm = `%${search}%`;
-      params.push(searchTerm);
-      params.push(searchTerm);
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { county: { $regex: search, $options: "i" } },
+      ];
     }
 
-    // Get total count
-    const countQuery = `SELECT COUNT(*) as count FROM agencies WHERE ${whereClause}`;
-    const countStmt = db.prepare(countQuery);
-    const countResult = countStmt.get(...params) as { count: number };
-    const total = countResult.count;
+    const agenciesCollection = db.collection("agencies");
 
-    // Fetch agencies
-    const query = `
-      SELECT id, name, state, state_code, type, population, website, county, created_at, updated_at
-      FROM agencies
-      WHERE ${whereClause}
-      ORDER BY ${finalSortBy} ${finalSortOrder}
-      LIMIT ? OFFSET ?
-    `;
+    const total = await agenciesCollection.countDocuments(filter);
 
-    const stmt = db.prepare(query);
-    const agencies = stmt.all(...params, limit, skip) as any[];
+    const agencies = await agenciesCollection
+      .find(filter)
+      .sort({ [finalSortBy]: finalSortOrder })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
     const totalPages = Math.ceil(total / limit);
+
+    // Remove MongoDB _id field
+    const cleanedAgencies = agencies.map(({ _id, ...rest }: any) => rest);
 
     return NextResponse.json(
       {
         success: true,
-        data: agencies,
+        data: cleanedAgencies,
         pagination: {
           page,
           limit,

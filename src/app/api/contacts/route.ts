@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Initialize contact limit table on first request
-    initializeContactLimitTable();
+    await initializeContactLimitTable();
 
     const searchParams = request.nextUrl.searchParams;
 
@@ -54,35 +54,31 @@ export async function GET(request: NextRequest) {
       'created_at',
     ];
     const finalSortBy = validSortFields.includes(sortBy) ? sortBy : 'last_name';
-    const finalSortOrder = sortOrder === 'desc' ? 'DESC' : 'ASC';
+    const finalSortOrder = sortOrder === 'desc' ? -1 : 1;
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
-    let whereClause = '1=1';
-    const params: any[] = [];
+    // Build filter
+    const filter: any = {};
 
     if (agencyName) {
-      whereClause += ' AND LOWER(agency_name) LIKE LOWER(?)';
-      params.push(`%${agencyName}%`);
+      filter.agency_name = { $regex: agencyName, $options: 'i' };
     }
 
     if (search) {
-      whereClause += ` AND (LOWER(first_name) LIKE LOWER(?) OR LOWER(last_name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?))`;
-      const searchTerm = `%${search}%`;
-      params.push(searchTerm);
-      params.push(searchTerm);
-      params.push(searchTerm);
+      filter.$or = [
+        { first_name: { $regex: search, $options: 'i' } },
+        { last_name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
     }
 
-    const countQuery = `SELECT COUNT(*) as count FROM contacts WHERE ${whereClause}`;
-    const countStmt = db.prepare(countQuery);
-    const countResult = countStmt.get(...params) as { count: number };
-    const total = countResult.count;
+    const contactsCollection = db.collection('contacts');
 
-    const hasExceeded = hasExceededDailyLimit(userId);
+    const hasExceeded = await hasExceededDailyLimit(userId);
 
     if (hasExceeded) {
-      const viewedToday = getContactsViewedToday(userId);
+      const viewedToday = await getContactsViewedToday(userId);
       return NextResponse.json(
         {
           success: false,
@@ -93,10 +89,10 @@ export async function GET(request: NextRequest) {
           pagination: {
             page,
             limit,
-            total,
-            totalPages: Math.ceil(total / limit),
+            total: 0,
+            totalPages: 0,
             hasNextPage: false,
-            hasPreviousPage: page > 1,
+            hasPreviousPage: false,
           },
           message: 'You have reached your daily limit of 50 contacts. Upgrade your plan to view more.',
         },
@@ -104,26 +100,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const query = `
-      SELECT 
-        id, first_name, last_name, email, phone, title, 
-        email_type, contact_form_url, department, agency_name, agency_id, created_at, updated_at
-      FROM contacts
-      WHERE ${whereClause}
-      ORDER BY ${finalSortBy} ${finalSortOrder}
-      LIMIT ? OFFSET ?
-    `;
+    // Fetch both total count and contacts in parallel
+    const [total, contacts, alreadyViewed] = await Promise.all([
+      contactsCollection.countDocuments(filter),
+      contactsCollection
+        .find(filter)
+        .sort({ [finalSortBy]: finalSortOrder })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      getAlreadyViewedContacts(userId),
+    ]);
 
-    const stmt = db.prepare(query);
-    const contacts = stmt.all(...params, limit, skip) as any[];
-
-    const alreadyViewed = getAlreadyViewedContacts(userId);
-    const alreadyViewedSet = new Set(alreadyViewed);
-
-    const newContacts = contacts.filter(contact => !alreadyViewedSet.has(contact.id));
+    const newContacts = contacts.filter(contact => !alreadyViewed.has(contact.id));
 
     if (newContacts.length > 0) {
-      const currentViewed = getContactsViewedToday(userId);
+      const currentViewed = await getContactsViewedToday(userId);
       const projectedTotal = currentViewed + newContacts.length;
 
       if (projectedTotal > 50) {
@@ -131,11 +123,13 @@ export async function GET(request: NextRequest) {
         const contactsToCount = newContacts.slice(0, contactsCanView);
         
         if (contactsToCount.length > 0) {
-          incrementContactViewCount(userId, contactsToCount.length);
-          addViewedContacts(userId, contactsToCount.map(c => c.id));
+          await Promise.all([
+            incrementContactViewCount(userId, contactsToCount.length),
+            addViewedContacts(userId, contactsToCount.map(c => c.id)),
+          ]);
         }
 
-        const viewedToday = getContactsViewedToday(userId);
+        const viewedToday = await getContactsViewedToday(userId);
         return NextResponse.json(
           {
             success: false,
@@ -157,13 +151,18 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      incrementContactViewCount(userId, newContacts.length);
-      addViewedContacts(userId, newContacts.map(c => c.id));
+      await Promise.all([
+        incrementContactViewCount(userId, newContacts.length),
+        addViewedContacts(userId, newContacts.map(c => c.id)),
+      ]);
     }
 
-    const viewedToday = getContactsViewedToday(userId);
-    const remainingAfter = getRemainingContactsToday(userId);
+    const viewedToday = await getContactsViewedToday(userId);
+    const remainingAfter = await getRemainingContactsToday(userId);
     const totalPages = Math.ceil(total / limit);
+
+    // Remove MongoDB _id field from response
+    const cleanedContacts = contacts.map(({ _id, ...rest }) => rest);
 
     return NextResponse.json(
       {
@@ -171,7 +170,7 @@ export async function GET(request: NextRequest) {
         limitExceeded: false,
         viewedToday,
         remaining: remainingAfter,
-        data: contacts,
+        data: cleanedContacts,
         pagination: {
           page,
           limit,

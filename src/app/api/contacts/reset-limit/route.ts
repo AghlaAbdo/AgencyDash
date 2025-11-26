@@ -13,20 +13,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
     const today = new Date().toISOString().split('T')[0];
 
     // Delete today's contact view logs
-    const deleteLogsStmt = db.prepare(
-      'DELETE FROM contact_view_logs WHERE user_id = ? AND date = ?'
-    );
-    deleteLogsStmt.run(userId, today);
+    await db.collection('contact_view_logs').deleteOne({ user_id: userId, date: today });
 
     // Delete today's viewed contacts
-    const deleteViewedStmt = db.prepare(
-      'DELETE FROM viewed_contacts WHERE user_id = ? AND date = ?'
-    );
-    deleteViewedStmt.run(userId, today);
+    await db.collection('viewed_contacts').deleteMany({ user_id: userId, date: today });
 
     return NextResponse.json(
       {
