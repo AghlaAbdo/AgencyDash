@@ -30,6 +30,7 @@ interface ContactRow {
   created_at?: string;
   updated_at?: string;
   agency_id?: string;
+  agency_name?: string;
   firm_id?: string;
 }
 
@@ -53,14 +54,13 @@ function readCsvRows<T = any>(filePath: string): T[] {
 }
 
 async function seedDatabase() {
-  console.log('🌱 Starting database seed...');
+  console.log('Starting database seed...');
 
   const agenciesPath = path.join(process.cwd(), 'data', 'agencies_agency_rows.csv');
   const contactsPath = path.join(process.cwd(), 'data', 'contacts_contact_rows.csv');
   const dbPath = path.join(process.cwd(), 'database', 'data.db');
 
   const agencies = readCsvRows<AgencyRow>(agenciesPath);
-  console.log("---Agencies: ", agencies)
   const contacts = readCsvRows<ContactRow>(contactsPath);
 
   console.log(`Found ${agencies.length} agencies`);
@@ -94,6 +94,7 @@ async function seedDatabase() {
         email_type TEXT,
         contact_form_url TEXT,
         department TEXT,
+        agency_name TEXT,
         created_at TEXT,
         updated_at TEXT,
         agency_id TEXT,
@@ -119,10 +120,10 @@ async function seedDatabase() {
     const insertContact = db.prepare(`
       INSERT INTO contacts (
         id, first_name, last_name, email, phone, title, email_type,
-        contact_form_url, department, created_at, updated_at, agency_id, firm_id
+        contact_form_url, department, agency_name, created_at, updated_at, agency_id, firm_id
       ) VALUES (
         @id, @first_name, @last_name, @email, @phone, @title, @email_type,
-        @contact_form_url, @department, @created_at, @updated_at, @agency_id, @firm_id
+        @contact_form_url, @department, @agency_name, @created_at, @updated_at, @agency_id, @firm_id
       )
       ON CONFLICT(id) DO UPDATE SET
         first_name = excluded.first_name,
@@ -133,6 +134,7 @@ async function seedDatabase() {
         email_type = excluded.email_type,
         contact_form_url = excluded.contact_form_url,
         department = excluded.department,
+        agency_name = excluded.agency_name,
         updated_at = excluded.updated_at,
         agency_id = excluded.agency_id,
         firm_id = excluded.firm_id
@@ -183,6 +185,7 @@ async function seedDatabase() {
           email_type: nullOrValue(c.email_type),
           contact_form_url: nullOrValue(c.contact_form_url),
           department: nullOrValue(c.department),
+          agency_name: nullOrValue(c.agency_name),
           created_at: nullOrValue(c.created_at),
           updated_at: nullOrValue(c.updated_at),
           agency_id: nullOrValue(c.agency_id),
@@ -196,19 +199,24 @@ async function seedDatabase() {
     const insertedAgencies = insertAgenciesTxn(agencies);
     console.log(`Agencies seeded (${insertedAgencies} rows)`);
 
-    // Build a Set of valid agency ids (from the CSV / inserted agencies)
-    const agencyIds = new Set<string>();
+    // Build a map of agency IDs to agency names
+    const agencyMap = new Map<string, string>();
     for (const a of agencies) {
       const id = nullOrValue(a.id) as string | null;
-      if (id) agencyIds.add(id);
+      const name = nullOrValue(a.name) as string | null;
+      if (id && name) {
+        agencyMap.set(id, name);
+      }
     }
 
-    // Prepare contacts: if agency_id doesn't reference an existing agency, set it to null
+    // Prepare contacts with agency names
     const preparedContacts = contacts.map((c) => {
       const aId = nullOrValue(c.agency_id) as string | null;
+      const agencyName = aId && agencyMap.has(aId) ? agencyMap.get(aId) : null;
       return {
         ...c,
-        agency_id: aId && agencyIds.has(aId) ? aId : null,
+        agency_id: aId,
+        agency_name: agencyName,
       };
     });
 
