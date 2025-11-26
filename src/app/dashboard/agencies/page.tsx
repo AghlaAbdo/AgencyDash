@@ -120,7 +120,7 @@ export default function AgenciesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Agencies</h1>
 
@@ -166,7 +166,7 @@ export default function AgenciesPage() {
               <select
                 value={filters.type}
                 onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-600 px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Types</option>
                 <option value="City">City</option>
@@ -182,7 +182,7 @@ export default function AgenciesPage() {
               <select
                 value={filters.limit}
                 onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
-                className="w-full px-3 text-gray-600 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 text-gray-600 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>

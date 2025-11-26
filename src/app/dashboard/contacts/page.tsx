@@ -81,7 +81,7 @@ export default function ContactsPage() {
       setViewedToday(result.viewedToday);
       setRemaining(result.remaining);
       setLimitExceeded(result.limitExceeded);
-      console.log("result:", result);
+    //   console.log("result:", result);
       if (result.limitExceeded) {
         setFilters({
             page: 1,
@@ -200,7 +200,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Contacts</h1>
@@ -276,7 +276,7 @@ export default function ContactsPage() {
                 value={filters.agencyName}
                 onChange={(e) => handleFilterChange('agencyName', e.target.value)}
                 disabled={limitExceeded}
-                className="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full text-gray-600 text-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -289,7 +289,7 @@ export default function ContactsPage() {
                 value={filters.limit}
                 onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
                 disabled={limitExceeded}
-                className="w-full px-3 text-gray-600 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 text-gray-600 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
