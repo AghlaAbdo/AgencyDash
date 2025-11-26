@@ -109,6 +109,16 @@ export default function AgenciesPage() {
     return filters.sortOrder === 'asc' ? <span>↑</span> : <span>↓</span>;
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
@@ -195,7 +205,7 @@ export default function AgenciesPage() {
                     sortOrder: 'asc',
                   })
                 }
-                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition"
+                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition cursor-pointer"
               >
                 Reset
               </button>
@@ -221,10 +231,10 @@ export default function AgenciesPage() {
         {!loading && agencies.length > 0 && (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
-                <thead className="bg-gray-100 border-b border-gray-200">
+              <table className="w-full" style={{ tableLayout: 'fixed', minWidth: '1400px' }}>
+                <thead className="bg-gray-100 border-b border-gray-200 sticky top-0">
                   <tr>
-                    <th className="w-1/4 px-6 py-3 text-left">
+                    <th className="w-[18%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('name')}
                         className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
@@ -232,7 +242,7 @@ export default function AgenciesPage() {
                         Name <SortIcon column="name" />
                       </button>
                     </th>
-                    <th className="w-1/6 px-4 py-3 text-left">
+                    <th className="w-[12%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('state')}
                         className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
@@ -240,7 +250,7 @@ export default function AgenciesPage() {
                         State <SortIcon column="state" />
                       </button>
                     </th>
-                    <th className="w-1/12 px-4 py-3 text-left">
+                    <th className="w-[6%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('type')}
                         className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
@@ -248,8 +258,10 @@ export default function AgenciesPage() {
                         Type <SortIcon column="type" />
                       </button>
                     </th>
-                    <th className="w-1/6 px-4 py-3 text-left font-semibold text-gray-700">County</th>
-                    <th className="w-1/8 px-4 py-3 text-left">
+                    <th className="w-[12%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                      County
+                    </th>
+                    <th className="w-[12%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('population')}
                         className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
@@ -257,7 +269,15 @@ export default function AgenciesPage() {
                         Population <SortIcon column="population" />
                       </button>
                     </th>
-                    <th className="w-1/4 px-4 py-3 text-left font-semibold text-gray-700">Website</th>
+                    <th className="w-[14%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                      Website
+                    </th>
+                    <th className="w-[8%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                      Created
+                    </th>
+                    <th className="w-[8%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                      Updated
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -266,26 +286,26 @@ export default function AgenciesPage() {
                       key={agency.id}
                       className="hover:bg-gray-50 transition"
                     >
-                      <td className="w-1/4 px-4 py-4 font-medium text-gray-900 wrap-break-word">
+                      <td className="w-[18%] px-4 py-4 font-medium text-gray-900 break-words">
                         {agency.name}
                       </td>
-                      <td className="w-1/6 px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
                         {agency.state} ({agency.state_code})
                       </td>
-                      <td className="w-1/6 px-4 py-4 wrap-break-word">
+                      <td className="w-[10%] px-4 py-4 break-words">
                         <span className="inline-block px-2 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded">
                           {agency.type}
                         </span>
                       </td>
-                      <td className="w-1/6 px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
                         {agency.county || '-'}
                       </td>
-                      <td className="w-1/6 px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[12%] px-4 py-4 text-gray-600 break-words">
                         {agency.population
                           ? agency.population.toLocaleString()
                           : '-'}
                       </td>
-                      <td className="w-1/6 px-4 py-4 wrap-break-word">
+                      <td className="w-[14%] px-4 py-4 break-words">
                         {agency.website ? (
                           <a
                             href={agency.website}
@@ -298,6 +318,12 @@ export default function AgenciesPage() {
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
+                      </td>
+                      <td className="w-[11%] px-4 py-4 text-gray-600 break-words">
+                        {formatDate(agency.created_at)}
+                      </td>
+                      <td className="w-[11%] px-4 py-4 text-gray-600 break-words">
+                        {formatDate(agency.updated_at)}
                       </td>
                     </tr>
                   ))}

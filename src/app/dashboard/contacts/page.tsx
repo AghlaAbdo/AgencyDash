@@ -238,7 +238,7 @@ export default function ContactsPage() {
                 </p>
                 <button 
                   onClick={handleUpgradePlan}
-                  className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm font-medium"
+                  className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm font-medium cursor-pointer"
                 >
                   Upgrade Plan
                 </button>
@@ -316,7 +316,7 @@ export default function ContactsPage() {
                   });
                 }}
                 disabled={limitExceeded}
-                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Reset
               </button>
@@ -342,37 +342,37 @@ export default function ContactsPage() {
         {!loading && contacts.length > 0 && !limitExceeded && (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full" style={{ tableLayout: 'fixed' }}>
+              <table className="w-full" style={{ tableLayout: 'fixed', minWidth: '1600px' }}>
                 <thead className="bg-gray-100 border-b border-gray-200 sticky top-0">
                   <tr>
-                    <th className="w-[8%] px-4 py-3 text-left whitespace-nowrap">
+                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('first_name')}
-                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
+                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2 cursor-pointer"
                       >
                         First Name <SortIcon column="first_name" />
                       </button>
                     </th>
-                    <th className="w-[8%] px-4 py-3 text-left whitespace-nowrap">
+                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('last_name')}
-                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
+                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2 cursor-pointer"
                       >
                         Last Name <SortIcon column="last_name" />
                       </button>
                     </th>
-                    <th className="w-[12%] px-4 py-3 text-left whitespace-nowrap">
+                    <th className="w-[20%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('email')}
-                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
+                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2 cursor-pointer"
                       >
                         Email <SortIcon column="email" />
                       </button>
                     </th>
-                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap">
+                    <th className="w-[11%] px-4 py-3 text-left whitespace-nowrap">
                       <button
                         onClick={() => handleSort('phone')}
-                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2"
+                        className="font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-2 cursor-pointer"
                       >
                         Phone <SortIcon column="phone" />
                       </button>
@@ -380,19 +380,19 @@ export default function ContactsPage() {
                     <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Title
                     </th>
-                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                    <th className="w-[11%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Department
                     </th>
-                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                    <th className="w-[11%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Agency
                     </th>
-                    <th className="w-[12%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                    <th className="w-[14%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Contact Form URL
                     </th>
-                    <th className="w-[9%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Created
                     </th>
-                    <th className="w-[11%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
+                    <th className="w-[10%] px-4 py-3 text-left whitespace-nowrap font-semibold text-gray-700">
                       Updated
                     </th>
                   </tr>
@@ -403,13 +403,13 @@ export default function ContactsPage() {
                       key={contact.id}
                       className="hover:bg-gray-50 transition"
                     >
-                      <td className="w-[8%] px-4 py-4 font-medium text-gray-900 wrap-break-word">
+                      <td className="w-[10%] px-4 py-4 font-medium text-gray-900 wrap-break-word">
                         {contact.first_name || '-'}
                       </td>
-                      <td className="w-[8%] px-4 py-4 font-medium text-gray-900 wrap-break-word">
+                      <td className="w-[10%] px-4 py-4 font-medium text-gray-900 wrap-break-word">
                         {contact.last_name || '-'}
                       </td>
-                      <td className="w-[12%] px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[14%] px-4 py-4 text-gray-600 wrap-break-word">
                         <a
                           href={`mailto:${contact.email}`}
                           className="text-blue-600 hover:text-blue-800 underline"
@@ -417,28 +417,19 @@ export default function ContactsPage() {
                           {contact.email || '-'}
                         </a>
                       </td>
-                      <td className="w-[10%] px-4 py-4 text-gray-600 wrap-break-word">
-                        {contact.phone ? (
-                          <a
-                            href={`tel:${contact.phone}`}
-                            className="text-blue-600 hover:text-blue-800 underline"
-                          >
-                            {contact.phone}
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
+                        {contact.phone || '-'}
                       </td>
                       <td className="w-[10%] px-4 py-4 text-gray-600 wrap-break-word">
                         {contact.title || '-'}
                       </td>
-                      <td className="w-[10%] px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
                         {contact.department || '-'}
                       </td>
-                      <td className="w-[10%] px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
                         {contact.agency_name || '-'}
                       </td>
-                      <td className="w-[12%] px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[14%] px-4 py-4 text-gray-600 wrap-break-word">
                         {contact.contact_form_url ? (
                           <a
                             href={contact.contact_form_url}
@@ -456,7 +447,7 @@ export default function ContactsPage() {
                       <td className="w-[9%] px-4 py-4 text-gray-600 wrap-break-word">
                         {formatDate(contact.created_at)}
                       </td>
-                      <td className="w-[11%] px-4 py-4 text-gray-600 wrap-break-word">
+                      <td className="w-[10%] px-4 py-4 text-gray-600 wrap-break-word">
                         {formatDate(contact.updated_at)}
                       </td>
                     </tr>
